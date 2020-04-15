@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Properties;
+import java.text.SimpleDateFormat;
 
 public class GGsyncProperties {
 	private String GOOGLE_OAUTH_TYPE, GOOGLE_CALENDAR_ID;
@@ -47,20 +48,22 @@ public class GGsyncProperties {
 			this.GAROON_ACCOUNT = prop.getProperty("garoon.account").trim();
 			this.GAROON_PASSWORD = prop.getProperty("garoon.password").trim();
 
-			long syncBeforeDays = Long.parseLong(prop.getProperty("sync.before.days", "1").trim());
+			String startData = prop.getProperty("sync.start.date", "2020/01/01 00:00:00").trim();
+			SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+
 			long syncAfterDays = Long.parseLong(prop.getProperty("sync.after.days", "7").trim());
 
 			Date currentDate = new Date();
-			this.SYNC_START_DATE = new Date(currentDate.getTime() - 60 * 60 * 24 * 1000 * syncBeforeDays);
+			this.SYNC_START_DATE = sdFormat.parse(startData);
 			this.SYNC_END_DATE = new Date(currentDate.getTime() + 60 * 60 * 24 * 1000 * syncAfterDays);
-			
+
 			this.GAROON_MEMBER_LIMIT = Integer.parseInt(prop.getProperty("garoon.member.limit", "0").trim());
 
 			/**
 			 * Garoon APIはUTC以外のタイムゾーンを指定した場合もUTCとして扱われるため、タイムゾーンはJSTで構わない
 			 */
-			this.SYNC_START_DATE_UTC = new Date(currentDate.getTime() - 60 * 60 * 24 * 1000 * syncBeforeDays - 60 * 60 * 9 * 1000);
-			this.SYNC_END_DATE_UTC = new Date(currentDate.getTime() + 60 * 60 * 24 * 1000 * syncAfterDays - 60 * 60 * 9 * 1000);
+			this.SYNC_START_DATE_UTC = new Date(this.SYNC_START_DATE.getTime() - 60 * 60 * 9 * 1000);
+			this.SYNC_END_DATE_UTC = new Date(this.SYNC_END_DATE.getTime() - 60 * 60 * 9 * 1000);
 
 			this.EXECUTION_LEVEL = prop.getProperty("execution.level", "0").trim();
 		} catch(Exception e) {
@@ -131,7 +134,7 @@ public class GGsyncProperties {
 	public String getExecutionLevel() {
 		return this.EXECUTION_LEVEL;
 	}
-	
+
 	public Integer getGaroonMemberLimit() {
 		return this.GAROON_MEMBER_LIMIT;
 	}
